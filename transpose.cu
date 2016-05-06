@@ -8,6 +8,22 @@ const int NUM_REPS = 100;
 const int nx = 1000;
 const int ny = 1000;
 
+
+//Uni10 Transpose
+__global__ void transposeUni10(const double *A, size_t M, size_t N, double *AT)
+{
+  size_t y = blockIdx.y * blockDim.y + threadIdx.y;
+  size_t x = blockIdx.x * blockDim.x + threadIdx.x;
+  if(y < M && x < N)
+    AT[x * M + y] = A[y * N + x];
+}
+
+//Yours Transpose
+__global__ void transpose10(const double *A, size_t M, size_t N, double *AT)
+{
+  //
+}
+
 // Convenience function for checking CUDA runtime API results
 // can be wrapped around any runtime API call. No-op in release builds.
 inline
@@ -35,14 +51,6 @@ void postprocess(const double *ref, const double *res, int n, double ms)
     }
   if (passed)
     printf("%20.2f\n", 2 * n * sizeof(double) * 1e-6 * NUM_REPS / ms );
-}
-
-__global__ void transposeUni10(const double *A, size_t M, size_t N, double *AT)
-{
-  size_t y = blockIdx.y * blockDim.y + threadIdx.y;
-  size_t x = blockIdx.x * blockDim.x + threadIdx.x;
-  if(y < M && x < N)
-    AT[x * M + y] = A[y * N + x];
 }
 
 int main(int argc, char **argv)
