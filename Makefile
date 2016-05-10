@@ -1,5 +1,5 @@
 GPU_LIB := libuni10
-UNI10_SRC_ROOT :=/home/Yun-Hsuan/GitRepo/tensorlib/uni10/src/uni10
+UNI10_SRC_ROOT :=./tensorlib/uni10/src/uni10
 SRC := .
 
 OPENBLASDIR  ?= /usr/local/openblas
@@ -11,7 +11,7 @@ LD            = icpc
 NVCC          = nvcc
 CFLAGS        = -Wall -std=c++11 -O3 -m64
 LDFLAGS       = -Wall -std=c++11 -O3 -m64
-NVCCOPT       = -ccbin icpc -Xcompiler "-Wall -Wno-long-long -ansi -pedantic -ansi-alias -parallel -fopenmp -openmp-link=static -static-intel -wd10237" -O3 -Xcompiler "-O3" -m64 -arch=sm_30
+NVCCOPT       = -std=c++11 -O3 -m64 -arch=sm_30
 
 MAGMA_CFLAGS   := -DADD_ -I$(MAGMADIR)/include -I$(CUDADIR)/include
 MAGMA_F90FLAGS := -I$(MAGMADIR)/include -Dmagma_devptr_t="integer(kind=8)"
@@ -20,9 +20,10 @@ MAGMA_LIBS   := -L$(MAGMADIR)/lib -L$(CUDADIR)/lib64 -L$(OPENBLASDIR)/lib \
                 -lmagma -lcublas -lcudart -lopenblas
 
 
-MKL_LIB1 := /opt/intel/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_intel_lp64.a
-MKL_LIB2 := /opt/intel/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_intel_thread.a
-MKL_LIB3 := /opt/intel/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_core.a
+#MKL_LIB1 := /opt/intel/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_intel_lp64.a
+#MKL_LIB2 := /opt/intel/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_intel_thread.a
+#MKL_LIB3 := /opt/intel/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_core.a
+#$(NVCC) -ftz true $(NVCCOPT) $< -o $@ $(GPU_OBJ) -lcublas -lcusolver -lcusparse -lblas -llapack -lm -lhdf5_cpp -lhdf5
 
 INC := $(UNI10_ROOT)/include
 LIB := ./libuni10_gpu.a
@@ -86,16 +87,17 @@ libuni10_gpu.a: $(GPU_OBJ)
 
 # ----------------------------------------
 
-all: exu obj
+all: exu obj 
 
 obj: gpu
 
-exu: transpose
+exu: transpose example
 
-clean-exu:
-	-rm -f transpose
-clean:
+clean-obj:
 	-rm -f $(GPU_LIB)/*.o $(GPU_LIB)/*.a *.mod
+
+clean:
+	-rm -f transpose example
 
 .SUFFIXES:
 
@@ -106,5 +108,8 @@ clean:
 	$(CC) $(CFLAGS) $(MAGMA_CFLAGS) -c -o $@ $<
 
 transpose: transpose.cu
-	$(NVCC) -ftz true $(NVCCOPT) $< -o $@ $(GPU_OBJ) -lcublas -lcusolver -lcusparse -lblas -llapack -lm -lhdf5_cpp -lhdf5
+	$(NVCC) $(NVCCOPT) $< -o $@
+
+example: example.cpp
+	$(CC) $(LDFLAGS) $(MAGMA_CFLAGS) $< -o $@ $(GPU_OBJ) $(MAGMA_TEST) $(MAGMA_LIBS) -lcublas -lcusolver -lcusparse -lblas -llapack -lm -lhdf5_cpp -lhdf5 -mkl=parallel
 

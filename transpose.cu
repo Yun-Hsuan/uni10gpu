@@ -5,8 +5,8 @@
 //const int BLOCK_ROWS = 32;
 const int thread = 32;
 const int NUM_REPS = 100;
-const int nx = 1000;
-const int ny = 1000;
+const int nx = 2000;
+const int ny = 2000;
 
 
 //Uni10 Transpose
@@ -110,8 +110,6 @@ int main(int argc, char **argv)
 
   dim3 dimGrid( (N + thread - 1) / thread, (M + thread - 1) / thread, 1);
   dim3 dimBlock(thread, thread, 1);
-  printf("dimGrid: %d %d %d. dimBlock: %d %d %d\n",
-         dimGrid.x, dimGrid.y, dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
 
   printf("%25s", "uni10 transpose");
   checkCuda( cudaMemset(d_tdata, 0, mem_size) );
@@ -125,6 +123,30 @@ int main(int argc, char **argv)
   checkCuda( cudaEventElapsedTime(&ms, startEvent, stopEvent) );
   checkCuda( cudaMemcpy(h_tdata, d_tdata, mem_size, cudaMemcpyDeviceToHost) );
   postprocess(gold, h_tdata, nx * ny, ms);
+  printf("dimGrid: %d %d %d. dimBlock: %d %d %d\n",
+         dimGrid.x, dimGrid.y, dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
+
+
+  // --------------
+  // Your transpose 
+  // --------------
+
+  printf("%25s", "uni10 transpose");
+  checkCuda( cudaMemset(d_tdata, 0, mem_size) );
+  // warmup
+  transposeUni10<<<dimGrid, dimBlock>>>(d_idata, M, N, d_tdata);
+  checkCuda( cudaEventRecord(startEvent, 0) );
+  for (int i = 0; i < NUM_REPS; i++)
+     transposeUni10<<<dimGrid, dimBlock>>>(d_idata, M, N, d_tdata);
+  checkCuda( cudaEventRecord(stopEvent, 0) );
+  checkCuda( cudaEventSynchronize(stopEvent) );
+  checkCuda( cudaEventElapsedTime(&ms, startEvent, stopEvent) );
+  checkCuda( cudaMemcpy(h_tdata, d_tdata, mem_size, cudaMemcpyDeviceToHost) );
+  postprocess(gold, h_tdata, nx * ny, ms);
+  printf("dimGrid: %d %d %d. dimBlock: %d %d %d\n",
+         dimGrid.x, dimGrid.y, dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
+
+
 
   // cleanup
   checkCuda( cudaEventDestroy(startEvent) );

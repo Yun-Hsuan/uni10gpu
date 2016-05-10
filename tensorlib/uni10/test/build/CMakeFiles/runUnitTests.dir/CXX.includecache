@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/Yun-Hsuan/Git_repo/tensorlib/uni10/test/testMatrix.cpp
+gtest/gtest.h
+-
+iostream
+-
+map
+-
+uni10.hpp
+/home/Yun-Hsuan/Git_repo/tensorlib/uni10/test/uni10.hpp
+time.h
+-
+vector
+-
+
+/home/Yun-Hsuan/Git_repo/tensorlib/uni10/test/testUniTensor.cpp
+gtest/gtest.h
+-
+iostream
+-
+map
+-
+uni10.hpp
+/home/Yun-Hsuan/Git_repo/tensorlib/uni10/test/uni10.hpp
+time.h
+-
+vector
+-
+
